@@ -1,7 +1,7 @@
 #include <check.h>
 #include <stdlib.h>
 #include "libcircle.h"
-#include "queue.h"
+#include "myqueue.h"
 
 START_TEST
 (test_checkpoint_single_read_write)

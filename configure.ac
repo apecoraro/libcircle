@@ -12,6 +12,7 @@ AC_CONFIG_HEADERS([config.h])
 # Check for compilers.
 AC_PROG_CC
 AM_PROG_CC_C_O
+AC_PROG_CXX
 
 # Check for pkg-config
 X_AC_LIBCIRCLE_PKG_CONFIG

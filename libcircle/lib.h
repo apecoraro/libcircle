@@ -4,7 +4,7 @@
 #include <config.h>
 
 #include "libcircle.h"
-#include "queue.h"
+#include "myqueue.h"
 
 typedef struct CIRCLE_input_st {
     CIRCLE_cb create_cb;

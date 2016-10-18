@@ -137,7 +137,7 @@ static void CIRCLE_init_local_state(MPI_Comm comm, CIRCLE_state_st* local_state)
     local_state->token_send_req = MPI_REQUEST_NULL;
 
     /* allocate memory for our offset arrays */
-    int32_t offsets = CIRCLE_INPUT_ST.queue->str_count;
+    int32_t offsets = 4096;/*CIRCLE_INPUT_ST.queue->str_count;*/
     local_state->offsets_count = offsets;
     local_state->offsets_send_buf = (int*) calloc((size_t)offsets, sizeof(int));
     local_state->offsets_recv_buf = (int*) calloc((size_t)offsets, sizeof(int));

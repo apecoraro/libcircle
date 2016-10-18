@@ -11,7 +11,7 @@ libcircle_la_LIBADD = $(MPI_CLDFLAGS)
 libcircle_la_LDFLAGS = -version-info $(LIBCIRCLE_SO_VERSION)
 libcircle_la_SOURCES = \
         libcircle/lib.c \
-        libcircle/queue.c \
+        libcircle/myqueue.cpp \
         libcircle/token.c \
         libcircle/worker.c
 
@@ -27,7 +27,6 @@ include_HEADERS = \
 noinst_HEADERS = \
         libcircle/log.h \
         libcircle/lib.h \
-        libcircle/queue.h \
         libcircle/token.h \
         libcircle/worker.h
 

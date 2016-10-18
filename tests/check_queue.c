@@ -1,7 +1,7 @@
 #include <check.h>
 #include <stdlib.h>
 #include "libcircle.h"
-#include "queue.h"
+#include "myqueue.h"
 
 START_TEST
 (test_queue_init_free)
@@ -102,7 +102,9 @@ START_TEST
     fail_unless(q != NULL, "Initializing a queue failed.");
 
     /* Warm it up a bit */
+    printf("pushing\n");
     CIRCLE_internal_queue_push(q, test_strings[0]);
+    printf("popping\n");
     CIRCLE_internal_queue_pop(q, result);
     CIRCLE_internal_queue_push(q, test_strings[1]);
     CIRCLE_internal_queue_pop(q, result);

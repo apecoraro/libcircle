@@ -15,7 +15,7 @@
 #include "log.h"
 #include "token.h"
 #include "worker.h"
-#include "queue.h"
+#include "myqueue.h"
 
 extern int8_t CIRCLE_ABORT_FLAG;
 
@@ -733,7 +733,8 @@ static int32_t CIRCLE_work_receive(
     /* the second int is the number of characters we'll receive,
      * make sure our queue has enough storage */
     int chars = st->offsets_recv_buf[1];
-    size_t new_bytes = (size_t)(qp->head + (uintptr_t)chars) * sizeof(char);
+    /*size_t new_bytes = (size_t)(qp->head + (uintptr_t)chars) * sizeof(char);*/
+    size_t new_bytes = (size_t)((uintptr_t)chars) * sizeof(char);
 
     if(new_bytes > qp->bytes) {
         if(CIRCLE_internal_queue_extend(qp, new_bytes) < 0) {
@@ -750,37 +751,45 @@ static int32_t CIRCLE_work_receive(
     /* make sure we have a pointer allocated for each element */
     int32_t count = items;
 
-    if(count > qp->str_count) {
+    /*if(count > qp->str_count) {
         if(CIRCLE_internal_queue_str_extend(qp, count) < 0) {
             LOG(CIRCLE_LOG_ERR, "Error: Unable to realloc string array.");
             MPI_Abort(comm, LIBCIRCLE_MPI_ERROR);
             return -1;
         }
-    }
+    }*/
 
     /* set offset to each element in our queue */
-    int32_t i;
+    /*int32_t i;
 
     for(i = 0; i < count; i++) {
         qp->strings[i] = (uintptr_t) st->offsets_recv_buf[i + 2];
-    }
 
-    /* double check that the base offset is valid */
-    if(qp->strings[0] != 0) {
-        LOG(CIRCLE_LOG_FATAL, \
-            "The base address of the queue doesn't match what it should be.");
+    }*/
+
+    if(CIRCLE_internal_queue_push_multi(
+            qp, count, (int*)&(st->offsets_recv_buf[2])) != 1) {
+        LOG(CIRCLE_LOG_ERR, "Error: Unable to push in incoming buffer.");
         MPI_Abort(comm, LIBCIRCLE_MPI_ERROR);
         return -1;
     }
 
+    /* double check that the base offset is valid */
+    /*if(qp->strings[0] != 0) {
+        LOG(CIRCLE_LOG_FATAL, \
+            "The base address of the queue doesn't match what it should be.");
+        MPI_Abort(comm, LIBCIRCLE_MPI_ERROR);
+        return -1;
+    }*/
+
     /* we now have count items in our queue */
-    qp->count = count;
+    /* qp->count = count; */
 
     /* set head of queue to point just past end of last element string */
-    uintptr_t elem_offset = qp->strings[count - 1];
+    /*uintptr_t elem_offset = qp->strings[count - 1];
     const char* elem_str = qp->base + elem_offset;
     size_t elem_len = strlen(elem_str) + 1;
-    qp->head = elem_offset + elem_len;
+    qp->head = elem_offset + elem_len;*/
 
     /* log number of items we received */
     LOG(CIRCLE_LOG_DBG, "Received %d items from %d", count, source);
@@ -923,19 +932,19 @@ static int CIRCLE_send_work(CIRCLE_internal_queue_t* qp, CIRCLE_state_st* st, \
     }
 
     /* Base address of the buffer to be sent */
-    int32_t start_elem = qp->count - count;
-    uintptr_t start_offset = qp->strings[start_elem];
+    /*int32_t start_elem = qp->count - count;
+    uintptr_t start_offset = qp->strings[start_elem];*/
 
     /* Address of the beginning of the last string to be sent */
-    int32_t end_elem = qp->count - 1;
-    uintptr_t end_offset = qp->strings[end_elem];
+    /*int32_t end_elem = qp->count - 1;
+    uintptr_t end_offset = qp->strings[end_elem];*/
 
     /* Distance between them */
-    size_t len = end_offset - start_offset;
-    len += strlen(qp->base + end_offset) + 1;
+    /*size_t len = end_offset - start_offset;
+    len += strlen(qp->base + end_offset) + 1;*/
 
     /* TODO: check that len doesn't overflow an int */
-    int bytes = (int) len;
+    size_t bytes = 0; /*(int) len;*/
 
     /* total number of ints we'll send */
     int numoffsets = 2 + count;
@@ -949,16 +958,22 @@ static int CIRCLE_send_work(CIRCLE_internal_queue_t* qp, CIRCLE_state_st* st, \
     /* offsets[0] = number of strings */
     /* offsets[1] = number of chars being sent */
     st->offsets_send_buf[0] = (int) count;
-    st->offsets_send_buf[1] = (int) bytes;
 
+    bytes = CIRCLE_internal_queue_pop_multi(qp, count, &(st->offsets_send_buf[2]));
+    if(bytes == 0) {
+        LOG(CIRCLE_LOG_ERR, "Error: Unable to pop for outgoing buffer.");
+        return -1;
+    }
+
+    st->offsets_send_buf[1] = (int)bytes;
     /* now compute offset of each string */
-    int32_t i = 0;
+    /*int32_t i = 0;
     int32_t current_elem = start_elem;
 
     for(i = 0; i < count; i++) {
         st->offsets_send_buf[2 + i] = (int)(qp->strings[current_elem] - start_offset);
         current_elem++;
-    }
+    }*/
 
     /* TODO; use isend to avoid deadlock, but in that case, be careful
      * to not overwrite space in queue before sends complete */
@@ -971,8 +986,8 @@ static int CIRCLE_send_work(CIRCLE_internal_queue_t* qp, CIRCLE_state_st* st, \
              CIRCLE_TAG_WORK_REPLY, comm);
 
     /* send data */
-    char* buf = qp->base + start_offset;
-    MPI_Send(buf, bytes, MPI_CHAR, dest,
+    char* buf = qp->base;/* + start_offset;*/
+    MPI_Send(buf, (int)bytes, MPI_CHAR, dest,
              CIRCLE_TAG_WORK_REPLY, comm);
 
     LOG(CIRCLE_LOG_DBG,

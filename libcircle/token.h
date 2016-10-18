@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <mpi.h>
 
-#include "queue.h"
+#include "myqueue.h"
 #include "lib.h"
 
 enum tags {
