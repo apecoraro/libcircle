@@ -12,11 +12,7 @@ extern "C" {
  * The maximum length of a string value which is allowed to be placed on the
  * queue structure.
  */
-#ifdef PATH_MAX
-#define CIRCLE_MAX_STRING_LEN PATH_MAX
-#else
-#define CIRCLE_MAX_STRING_LEN (4096)
-#endif
+#define CIRCLE_MAX_STRING_LEN (1048576)
 
 /**
  * Run time flags for the behavior of splitting work.

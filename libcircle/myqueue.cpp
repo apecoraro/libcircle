@@ -94,6 +94,33 @@ int8_t CIRCLE_internal_queue_pop(CIRCLE_internal_queue_t* qp, char* str)
     return 1;
 }
 
+int8_t CIRCLE_internal_queue_peek_size(CIRCLE_internal_queue_t* qp, size_t* str_size)
+{
+    if(!qp) {
+        LOG(CIRCLE_LOG_ERR, "Attempted to peek_size at an invalid queue.");
+        return -1;
+    }
+
+    if(qp->count < 1) {
+        LOG(CIRCLE_LOG_DBG, "Attempted to peek_size at an empty queue.");
+        return -1;
+    }
+
+    if(!str_size) {
+        LOG(CIRCLE_LOG_ERR,
+            "You must provide a size_t pointer for returning the result.");
+        return -1;
+    }
+
+    std::deque<std::string>& queue =
+        *(static_cast< std::deque<std::string>* >(qp->handle));
+    std::string& last_str = queue.back();
+
+    *str_size = last_str.size();
+
+    return 1;
+}
+
 int8_t CIRCLE_internal_queue_read(CIRCLE_internal_queue_t* qp, int rank)
 {
     if(!qp) {
