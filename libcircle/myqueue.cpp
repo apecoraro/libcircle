@@ -257,6 +257,9 @@ size_t CIRCLE_internal_queue_pop_multi(
         queue.pop_back();
     }
 
+    // shrink the queue internals to fit
+    std::deque<std::string>(queue).swap(queue);
+
     return static_cast<size_t>(cur_offset);
 }
 

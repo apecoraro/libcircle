@@ -794,6 +794,11 @@ static int32_t CIRCLE_work_receive(
     /* log number of items we received */
     LOG(CIRCLE_LOG_DBG, "Received %d items from %d", count, source);
 
+    /* free temporary buffer */
+    free(qp->base);
+    qp->base = NULL;
+    qp->bytes = 0;
+
     return 0;
 }
 
@@ -995,6 +1000,11 @@ static int CIRCLE_send_work(CIRCLE_internal_queue_t* qp, CIRCLE_state_st* st, \
 
     /* subtract elements from our queue */
     qp->count -= count;
+
+    /* free temporary buffer */
+    free(qp->base);
+    qp->base = NULL;
+    qp->bytes = 0;
 
     return 0;
 }
