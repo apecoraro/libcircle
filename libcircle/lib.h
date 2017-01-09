@@ -9,6 +9,7 @@
 typedef struct CIRCLE_input_st {
     CIRCLE_cb create_cb;
     CIRCLE_cb process_cb;
+    CIRCLE_cb_check_term_fn check_term_cb;
 
     CIRCLE_cb_reduce_init_fn reduce_init_cb;
     CIRCLE_cb_reduce_op_fn   reduce_op_cb;

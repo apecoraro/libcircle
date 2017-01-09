@@ -55,6 +55,7 @@ __inline__ int32_t CIRCLE_init(int argc, char* argv[], int user_options)
     /* initialize callback pointers */
     CIRCLE_INPUT_ST.create_cb      = NULL;
     CIRCLE_INPUT_ST.process_cb     = NULL;
+    CIRCLE_INPUT_ST.check_term_cb  = NULL;
     CIRCLE_INPUT_ST.reduce_init_cb = NULL;
     CIRCLE_INPUT_ST.reduce_op_cb   = NULL;
     CIRCLE_INPUT_ST.reduce_fini_cb = NULL;
@@ -135,6 +136,21 @@ __inline__ void CIRCLE_cb_process(CIRCLE_cb func)
     }
 
     CIRCLE_INPUT_ST.process_cb = func;
+}
+
+/**
+ * Prior to checking for termination and exiting the work_loop this
+ * function will be called. If it returns 0 then the term check will
+ * be skipped. This allows workers that are doing asynchronous work
+ * to complete that work (which could cause work to be added to the
+ * work queue outside of the process_cb) before the work loop is
+ * exited.
+ *
+ * @param func the callback to be used in the creation stage.
+ */
+__inline__ void CIRCLE_cb_check_term(CIRCLE_cb_check_term_fn func)
+{
+    CIRCLE_INPUT_ST.check_term_cb = func;
 }
 
 /**

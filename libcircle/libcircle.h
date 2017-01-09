@@ -50,6 +50,11 @@ typedef struct {
 typedef void (*CIRCLE_cb)(CIRCLE_handle* handle);
 
 /**
+  * The type for defining the check_term callback.
+  */
+typedef int (*CIRCLE_cb_check_term_fn)(CIRCLE_handle* handle);
+
+/**
  * Callbacks for initializing, executing, and obtaining final result
  * of a reduction
  */
@@ -79,6 +84,13 @@ void CIRCLE_cb_create(CIRCLE_cb func);
  * work should be processed.
  */
 void CIRCLE_cb_process(CIRCLE_cb func);
+
+/**
+ * Specify function that libcicle should use for check-term confirmation.
+ * This function callback is optional and is only needed if the worker is
+ * doing asynchronous work.
+ */
+void CIRCLE_cb_check_term(CIRCLE_cb_check_term_fn func);
 
 /**
  * Specify function that libcircle should call to get initial data for

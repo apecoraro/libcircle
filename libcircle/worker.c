@@ -243,12 +243,23 @@ static void CIRCLE_work_loop(CIRCLE_state_st* sptr, CIRCLE_handle* q_handle)
         /* If I don't have work, or if I received signal to abort,
          * check for termination */
         else {
-            int term_status = CIRCLE_check_for_term(sptr);
+            int check_term = 1;
+            if (CIRCLE_INPUT_ST.check_term_cb) {
+                /* if the worker is doing asynchronous work then it might */
+                /* add work to the queue outside of the process_cb, so */
+                /* this callback allows the worker to prevent exit from */
+                /* the work loop until the asynchronous work is complete */
+                check_term = (*(CIRCLE_INPUT_ST.check_term_cb))(q_handle);
+            }
 
-            if(term_status == TERMINATE) {
-                /* got the terminate signal, break the loop */
-                LOG(CIRCLE_LOG_DBG, "Received termination signal.");
-                break;
+            if (check_term) {
+                int term_status = CIRCLE_check_for_term(sptr);
+
+                if(term_status == TERMINATE) {
+                    /* got the terminate signal, break the loop */
+                    LOG(CIRCLE_LOG_DBG, "Received termination signal.");
+                    break;
+                }
             }
         }
     }
